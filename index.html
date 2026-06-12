@@ -283,7 +283,7 @@
         <div class="signup-info">
           <div class="signup-name">${escHtml(s.name)}${isMe ? '<span class="signup-you">You</span>' : ''}</div>
           <div class="signup-time">${fmtTime(s.start_h, s.start_m)} &ndash; ${fmtTime(s.end_h, s.end_m)}</div>
-          <div class="signup-phone">${escHtml(s.phone)}</div>
+          <div class="signup-phone"><a href="tel:${escHtml(s.phone)}" style="color:#888;text-decoration:none;">${escHtml(fmtPhone(s.phone))}</a></div>
         </div>
         ${canManage ? `<div class="signup-actions">
           <button class="btn-edit" onclick="openEdit(${JSON.stringify(s).split('"').join('&quot;')})">Edit</button>
@@ -292,6 +292,13 @@
       `;
       container.appendChild(div);
     });
+  }
+
+  function fmtPhone(p) {
+    const d = p.replace(/\D/g, "");
+    if (d.length === 10) return "(" + d.slice(0,3) + ") " + d.slice(3,6) + "-" + d.slice(6);
+    if (d.length === 11 && d[0] === "1") return "(" + d.slice(1,4) + ") " + d.slice(4,7) + "-" + d.slice(7);
+    return p;
   }
 
   function escHtml(s) {
