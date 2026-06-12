@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apricot Harvest Sign-Up | Congregation Rodef Shalom</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #fdf6ee; font-family: system-ui, sans-serif; min-height: 100vh; }
+
+    .header {
+      background: linear-gradient(135deg, #1a4a1a 0%, #2d6e2d 60%, #3d8b3d 100%);
+      padding: 28px 16px 24px;
+      text-align: center;
+    }
+    .header-icon { font-size: 52px; margin-bottom: 6px; }
+    .header-sub { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #b8e6b8; font-weight: 600; margin-bottom: 6px; }
+    .header h1 { color: #fff; font-size: 26px; font-weight: 800; line-height: 1.2; }
+    .header p { color: #c8e6c8; font-size: 13px; margin: 8px 0 18px; font-style: italic; }
+    .header-btns { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .btn-primary { padding: 9px 18px; border-radius: 8px; border: none; background: #e8f5e8; color: #1a4a1a; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .btn-ghost { padding: 9px 18px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.4); background: transparent; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; }
+    .admin-badge { color: #90ee90; font-size: 13px; align-self: center; }
+
+    .main { max-width: 620px; margin: 0 auto; padding: 20px 16px 60px; }
+
+    .card { background: #fff; border-radius: 14px; padding: 20px 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; border: 1px solid #e8f0e0; }
+    .card h2 { font-size: 18px; font-weight: 800; color: #1a4a1a; margin-bottom: 14px; }
+
+    label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select { display: block; width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #ddd; font-size: 14px; margin-bottom: 14px; font-family: inherit; background: #fff; }
+    input:focus, select:focus { outline: 2px solid #2d6e2d; border-color: #2d6e2d; }
+
+    .date-btns { display: flex; gap: 8px; margin-bottom: 14px; }
+    .date-btn { flex: 1; padding: 9px 6px; border-radius: 8px; border: 2px solid #ddd; background: #fff; color: #555; cursor: pointer; font-size: 13px; font-family: inherit; }
+    .date-btn.active { border-color: #2d6e2d; background: #e8f5e8; color: #1a4a1a; font-weight: 700; }
+
+    .time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px; }
+    .time-selects { display: flex; gap: 6px; }
+    .time-selects select { flex: 1; margin-bottom: 0; padding: 9px 6px; }
+
+    .time-preview { font-size: 12px; color: #2d6e2d; margin-bottom: 10px; font-weight: 600; min-height: 18px; }
+
+    .error { color: #c0392b; font-size: 13px; margin-bottom: 8px; font-weight: 500; }
+    .success { color: #2d6e2d; font-size: 13px; margin-bottom: 8px; font-weight: 500; }
+
+    .form-btns { display: flex; gap: 8px; margin-top: 14px; }
+    .btn-submit { flex: 1; padding: 11px 0; border-radius: 8px; border: none; background: linear-gradient(135deg, #2d6e2d, #1a4a1a); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+    .btn-cancel { padding: 11px 16px; border-radius: 8px; border: 1.5px solid #ddd; background: #fff; color: #555; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; }
+
+    .day-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .day-header h2 { margin: 0; font-size: 14px; font-weight: 700; color: #2d6e2d; white-space: nowrap; }
+    .day-line { flex: 1; height: 1px; background: linear-gradient(90deg, #b8d4a8, transparent); }
+    .day-line.right { background: linear-gradient(270deg, #b8d4a8, transparent); }
+
+    .empty-day { background: #fff; border-radius: 12px; padding: 22px 20px; text-align: center; color: #aaa; font-size: 14px; border: 1.5px dashed #ddd; margin-bottom: 10px; }
+
+    .signup-list { display: flex; flex-direction: column; gap: 10px; }
+    .signup-card { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); border: 1.5px solid #eee; display: flex; align-items: center; gap: 12px; }
+    .signup-card.mine { border: 2px solid #2d6e2d; }
+    .signup-icon { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #f4a535, #e8831a); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .signup-info { flex: 1; min-width: 0; }
+    .signup-name { font-weight: 700; color: #1a1a1a; font-size: 15px; }
+    .signup-you { margin-left: 8px; font-size: 11px; background: #e8f5e8; color: #2d6e2d; border-radius: 4px; padding: 1px 6px; font-weight: 600; }
+    .signup-time { color: #2d6e2d; font-size: 13px; font-weight: 600; margin-top: 2px; }
+    .signup-phone { color: #888; font-size: 12px; margin-top: 1px; }
+    .signup-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-edit { padding: 6px 9px; border-radius: 7px; border: none; background: #e8f5e8; color: #1a4a1a; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+    .btn-remove { padding: 6px 9px; border-radius: 7px; border: none; background: #ffeee8; color: #c0392b; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+
+    .footer-note { margin-top: 16px; padding: 14px 16px; background: #fff8ee; border-radius: 10px; border: 1px solid #f4d8a0; font-size: 13px; color: #7a5c1a; text-align: center; line-height: 1.6; }
+
+    .loading { text-align: center; color: #888; padding: 30px; font-size: 14px; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">&#127825;</div>
+  <div class="header-sub">Congregation Rodef Shalom &bull; San Rafael</div>
+  <h1>Apricot Harvest Sign-Up</h1>
+  <p>Help pick from a neighbor&#39;s tree &mdash; take home what you pick!</p>
+  <div class="header-btns">
+    <button class="btn-primary" onclick="showView('add')">+ Sign Me Up</button>
+    <button class="btn-ghost" id="adminBtn" onclick="showView('admin')">Admin</button>
+    <span class="admin-badge hidden" id="adminBadge">&#10003; Admin mode on</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Admin Login -->
+  <div class="card hidden" id="adminView">
+    <h2>Admin Access</h2>
+    <label>Password</label>
+    <input type="password" id="adminPw" placeholder="Enter password" onkeydown="if(event.key==='Enter') tryAdmin()" />
+    <div class="error hidden" id="adminError">Incorrect password.</div>
+    <div class="form-btns">
+      <button class="btn-submit" onclick="tryAdmin()">Unlock</button>
+      <button class="btn-cancel" onclick="showView('list')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Sign-Up Form -->
+  <div class="card hidden" id="addView">
+    <h2 id="formTitle">Add Your Sign-Up</h2>
+    <label>Your Name</label>
+    <input type="text" id="fName" placeholder="First and Last Name" />
+    <label>Phone Number</label>
+    <input type="tel" id="fPhone" placeholder="(415) 000-0000" />
+    <label>Date</label>
+    <div class="date-btns">
+      <button class="date-btn active" id="dateBtn0" onclick="selectDate('2026-06-12', 0)">Today<br><span style="font-size:11px;opacity:0.7">June 12</span></button>
+      <button class="date-btn" id="dateBtn1" onclick="selectDate('2026-06-13', 1)">Tomorrow<br><span style="font-size:11px;opacity:0.7">June 13</span></button>
+    </div>
+    <div class="time-row">
+      <div>
+        <label>Start Time</label>
+        <div class="time-selects">
+          <select id="startH" onchange="updatePreview()"></select>
+          <select id="startM" onchange="updatePreview()">
+            <option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>End Time</label>
+        <div class="time-selects">
+          <select id="endH" onchange="updatePreview()"></select>
+          <select id="endM" onchange="updatePreview()">
+            <option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="time-preview" id="timePreview"></div>
+    <div class="error hidden" id="formError"></div>
+    <div class="form-btns">
+      <button class="btn-submit" onclick="handleSubmit()">Add My Slot</button>
+      <button class="btn-cancel" onclick="showView('list')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div id="listView">
+    <div class="loading" id="loadingMsg">Loading sign-ups...</div>
+    <div id="dayJune12" class="hidden">
+      <div class="day-header">
+        <div class="day-line"></div>
+        <h2>&#127795; Today &mdash; Friday, June 12</h2>
+        <div class="day-line right"></div>
+      </div>
+      <div class="signup-list" id="list12"></div>
+    </div>
+    <div id="dayJune13" class="hidden" style="margin-top:20px">
+      <div class="day-header">
+        <div class="day-line"></div>
+        <h2>&#127795; Tomorrow &mdash; Saturday, June 13</h2>
+        <div class="day-line right"></div>
+      </div>
+      <div class="signup-list" id="list13"></div>
+    </div>
+    <div class="footer-note" id="footerNote" style="margin-top:16px">
+      Picking hours: <strong>8:00 AM &ndash; 8:00 PM</strong> both days &bull; Take home what you pick!<br>
+      <span style="font-size:11px;opacity:0.8">You can edit or remove your own sign-up anytime.</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = "https://nimpujcfmvuzlzhflywv.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pbXB1amNmbXZ1emx6aGZseXd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjM2NDksImV4cCI6MjA5NjgzOTY0OX0.49svzFWWl0XGgvFTWRNwMrHam3prUhB0IjeKUywEQUo";
+  const ADMIN_PASSWORD = "shalom2026";
+  const TABLE = "apricot_signups";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let adminUnlocked = false;
+  let selectedDate = "2026-06-12";
+  let editId = null;
+  let myToken = localStorage.getItem("apricot_token") || null;
+  let mySignupId = localStorage.getItem("apricot_id") || null;
+
+  // Build hour selects
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function fmtTime(h, m) {
+    const s = h >= 12 ? "PM" : "AM";
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return h12 + ":" + pad(m) + " " + s;
+  }
+  function toMins(h, m) { return Number(h) * 60 + Number(m); }
+
+  ["startH", "endH"].forEach((id, i) => {
+    const sel = document.getElementById(id);
+    for (let h = 8; h <= 20; h++) {
+      const o = document.createElement("option");
+      o.value = h;
+      o.textContent = fmtTime(h, 0).replace(":00", "");
+      if (i === 1 && h === 9) o.selected = true;
+      sel.appendChild(o);
+    }
+  });
+
+  function updatePreview() {
+    const sh = document.getElementById("startH").value;
+    const sm = document.getElementById("startM").value;
+    const eh = document.getElementById("endH").value;
+    const em = document.getElementById("endM").value;
+    const el = document.getElementById("timePreview");
+    if (toMins(eh, em) > toMins(sh, sm)) {
+      el.textContent = fmtTime(sh, sm) + " \u2013 " + fmtTime(eh, em) + " (" + (toMins(eh, em) - toMins(sh, sm)) + " min)";
+    } else {
+      el.textContent = "";
+    }
+  }
+  updatePreview();
+
+  function selectDate(date, idx) {
+    selectedDate = date;
+    document.getElementById("dateBtn0").classList.toggle("active", idx === 0);
+    document.getElementById("dateBtn1").classList.toggle("active", idx === 1);
+  }
+
+  function showView(v) {
+    document.getElementById("adminView").classList.add("hidden");
+    document.getElementById("addView").classList.add("hidden");
+    document.getElementById("listView").style.display = v === "list" ? "" : "none";
+    if (v === "admin") document.getElementById("adminView").classList.remove("hidden");
+    if (v === "add") document.getElementById("addView").classList.remove("hidden");
+    if (v === "list") loadSignups();
+    if (v !== "add") { editId = null; document.getElementById("formTitle").textContent = "Add Your Sign-Up"; }
+  }
+
+  function tryAdmin() {
+    if (document.getElementById("adminPw").value === ADMIN_PASSWORD) {
+      adminUnlocked = true;
+      document.getElementById("adminError").classList.add("hidden");
+      document.getElementById("adminBtn").classList.add("hidden");
+      document.getElementById("adminBadge").classList.remove("hidden");
+      showView("list");
+    } else {
+      document.getElementById("adminError").classList.remove("hidden");
+    }
+  }
+
+  async function loadSignups() {
+    document.getElementById("loadingMsg").style.display = "block";
+    document.getElementById("dayJune12").classList.add("hidden");
+    document.getElementById("dayJune13").classList.add("hidden");
+
+    const { data, error } = await sb.from(TABLE).select("*").order("start_h").order("start_m");
+    document.getElementById("loadingMsg").style.display = "none";
+
+    if (error) { document.getElementById("loadingMsg").textContent = "Error loading sign-ups."; return; }
+
+    renderDay("2026-06-12", "list12", "dayJune12", data);
+    renderDay("2026-06-13", "list13", "dayJune13", data);
+  }
+
+  function renderDay(date, listId, dayId, data) {
+    const entries = data.filter(s => s.date === date);
+    const container = document.getElementById(listId);
+    const dayDiv = document.getElementById(dayId);
+    dayDiv.classList.remove("hidden");
+    container.innerHTML = "";
+
+    if (entries.length === 0) {
+      container.innerHTML = '<div class="empty-day">No sign-ups yet &mdash; be the first! &#127825;</div>';
+      return;
+    }
+
+    entries.forEach(s => {
+      const isMe = s.id === mySignupId && s.token === myToken;
+      const canManage = adminUnlocked || isMe;
+      const div = document.createElement("div");
+      div.className = "signup-card" + (isMe ? " mine" : "");
+      div.innerHTML = `
+        <div class="signup-icon">&#127825;</div>
+        <div class="signup-info">
+          <div class="signup-name">${escHtml(s.name)}${isMe ? '<span class="signup-you">You</span>' : ''}</div>
+          <div class="signup-time">${fmtTime(s.start_h, s.start_m)} &ndash; ${fmtTime(s.end_h, s.end_m)}</div>
+          ${adminUnlocked ? '<div class="signup-phone">' + escHtml(s.phone) + '</div>' : ''}
+        </div>
+        ${canManage ? `<div class="signup-actions">
+          <button class="btn-edit" onclick="openEdit(${JSON.stringify(s).split('"').join('&quot;')})">Edit</button>
+          <button class="btn-remove" onclick="removeSignup('${s.id}', '${escHtml(s.name)}')">Remove</button>
+        </div>` : ''}
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  function openEdit(s) {
+    editId = s.id;
+    document.getElementById("formTitle").textContent = "Edit Sign-Up";
+    document.getElementById("fName").value = s.name;
+    document.getElementById("fPhone").value = s.phone;
+    selectDate(s.date, s.date === "2026-06-12" ? 0 : 1);
+    document.getElementById("startH").value = s.start_h;
+    document.getElementById("startM").value = s.start_m;
+    document.getElementById("endH").value = s.end_h;
+    document.getElementById("endM").value = s.end_m;
+    updatePreview();
+    showView("add");
+    document.getElementById("addView").classList.remove("hidden");
+    document.getElementById("listView").style.display = "none";
+  }
+
+  async function handleSubmit() {
+    const name = document.getElementById("fName").value.trim();
+    const phone = document.getElementById("fPhone").value.trim();
+    const sh = Number(document.getElementById("startH").value);
+    const sm = Number(document.getElementById("startM").value);
+    const eh = Number(document.getElementById("endH").value);
+    const em = Number(document.getElementById("endM").value);
+    const errEl = document.getElementById("formError");
+
+    if (!name) { showError("Please enter your name."); return; }
+    if (!phone) { showError("Please enter your phone number."); return; }
+    if (toMins(eh, em) <= toMins(sh, sm)) { showError("End time must be after start time."); return; }
+
+    errEl.classList.add("hidden");
+
+    if (editId) {
+      const { error } = await sb.from(TABLE).update({ name, phone, date: selectedDate, start_h: sh, start_m: sm, end_h: eh, end_m: em }).eq("id", editId);
+      if (error) { showError("Error saving. Please try again."); return; }
+    } else {
+      const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+      const { data, error } = await sb.from(TABLE).insert([{ name, phone, date: selectedDate, start_h: sh, start_m: sm, end_h: eh, end_m: em, token }]).select().single();
+      if (error) { showError("Error saving. Please try again."); return; }
+      mySignupId = data.id;
+      myToken = token;
+      localStorage.setItem("apricot_id", data.id);
+      localStorage.setItem("apricot_token", token);
+    }
+
+    editId = null;
+    document.getElementById("fName").value = "";
+    document.getElementById("fPhone").value = "";
+    showView("list");
+  }
+
+  function showError(msg) {
+    const el = document.getElementById("formError");
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  }
+
+  async function removeSignup(id, name) {
+    if (!confirm("Remove " + name + "'s sign-up?")) return;
+    const { error } = await sb.from(TABLE).delete().eq("id", id);
+    if (!error) {
+      if (id === mySignupId) { mySignupId = null; myToken = null; localStorage.removeItem("apricot_id"); localStorage.removeItem("apricot_token"); }
+      loadSignups();
+    }
+  }
+
+  // Init
+  showView("list");
+</script>
+</body>
+</html>
