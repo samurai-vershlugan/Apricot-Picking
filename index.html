@@ -80,9 +80,9 @@
 
 <div class="header">
   <div class="header-icon">&#127825;</div>
-  <div class="header-sub">Congregation Rodef Shalom &bull; San Rafael</div>
+  <div class="header-sub">Congregation Rodef Shalom</div>
   <h1>Apricot Harvest Sign-Up</h1>
-  <p>Help pick from a neighbor&#39;s tree &mdash; take home what you pick!</p>
+  <p>Help pick from a neighbor&#39;s tree</p>
   <div class="header-btns">
     <button class="btn-primary" onclick="showView('add')">+ Sign Me Up</button>
     <button class="btn-ghost" id="adminBtn" onclick="showView('admin')">Admin</button>
@@ -283,7 +283,7 @@
         <div class="signup-info">
           <div class="signup-name">${escHtml(s.name)}${isMe ? '<span class="signup-you">You</span>' : ''}</div>
           <div class="signup-time">${fmtTime(s.start_h, s.start_m)} &ndash; ${fmtTime(s.end_h, s.end_m)}</div>
-          ${adminUnlocked ? '<div class="signup-phone">' + escHtml(s.phone) + '</div>' : ''}
+          <div class="signup-phone">${escHtml(s.phone)}</div>
         </div>
         ${canManage ? `<div class="signup-actions">
           <button class="btn-edit" onclick="openEdit(${JSON.stringify(s).split('"').join('&quot;')})">Edit</button>
